@@ -1,0 +1,64 @@
+if (isset($_POST['generate_report'])) {
+    // Get the selected month and year from the form
+    $month = $_POST['month'];
+    $year = $_POST['year'];
+
+    // Validate month and year inputs if needed
+
+    // Initialize CSV content
+    $csvContent = "Employee ID, Employee Name, Total Attendance Hours, Total Permission Hours\n";
+
+    // Query to retrieve distinct employee IDs
+    $getEmployeesQuery = "SELECT DISTINCT employee_id FROM emp_attendance";
+    $employeesResult = mysqli_query($db, $getEmployeesQuery);
+
+    if ($employeesResult) {
+        while ($employee = mysqli_fetch_assoc($employeesResult)) {
+            $employeeId = $employee['employee_id'];
+
+            $startDate = date('Y-m-01', strtotime("$year-$month"));
+            $endDate = date('Y-m-t', strtotime("$year-$month"));
+
+            // Query to retrieve monthly attendance for each employee
+            $getAttendanceQuery = "SELECT * FROM emp_attendance WHERE employee_id = '$employeeId' AND attendance_date BETWEEN '$startDate' AND '$endDate'";
+            $attendanceResult = mysqli_query($db, $getAttendanceQuery);
+
+            if ($attendanceResult) {
+                $totalAttendanceHours = 0;
+                $totalPermissionHours = 0;
+
+                while ($attendance = mysqli_fetch_assoc($attendanceResult)) {
+                    $attendanceHours = $attendance['attendance_hour'];
+                    $permissionHours = $attendance['permission_hours'];
+                    $permissionMinutes = $attendance['permission_minutes'];
+
+                    $totalAttendanceHours += $attendanceHours;
+                    $totalPermissionHours += ($permissionHours + $permissionMinutes / 60);
+                }
+
+                // Fetch employee details
+                $employeeDetailsQuery = "SELECT * FROM emp_list WHERE emp_card = '$employeeId'";
+                $employeeDetailsResult = mysqli_query($db, $employeeDetailsQuery);
+                $employeeDetails = mysqli_fetch_assoc($employeeDetailsResult);
+                $employeeName = $employeeDetails['emp_fname'] . ' ' . $employeeDetails['emp_lname'];
+
+                // Append employee data to CSV content
+                $csvContent .= "$employeeId, $employeeName, $totalAttendanceHours, $totalPermissionHours\n";
+            } else {
+                // Handle attendance query error
+                echo "Error fetching attendance data: " . mysqli_error($db);
+            }
+        }
+
+        // Generate and download CSV file
+        $fileName = "monthly_report_$month-$year.csv";
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename=' . $fileName);
+        echo $csvContent;
+        exit();
+    } else {
+        // Handle employee query error
+        echo "Error fetching employee data: " . mysqli_error($db);
+    }
+}
+?>
