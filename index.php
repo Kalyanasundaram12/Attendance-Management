@@ -209,6 +209,7 @@ if(isset($_POST['attendance'])) {
     <link rel="stylesheet" href="admin/plugins/datatables-bs4/css/dataTables.bootstrap4.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="admin/dist/css/adminlte.min.css">
+    <a href="https://attendance-management-flame.vercel.app">Visit the Attendance Management website</a>
     <!-- Google Font: Source Sans Pro -->
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
     <script src="admin/dist/js/1.js"></script>
